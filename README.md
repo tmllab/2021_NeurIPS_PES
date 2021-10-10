@@ -2,7 +2,7 @@
 
 PyTorch Code for the following paper at NeurIPS 2021:\
 <b>Title</b>: Understanding and Improving Early Stopping for Learning with Noisy Labels \
-<b>Authors</b>: Yingbin Bai, Erkun Yang, Bo Han, Yanhua Yang, Jiatong Li, Yinian Mao, Gang Niu, Tongliang Liu
+<b>Authors</b>: Yingbin Bai, Erkun Yang, Bo Han, Yanhua Yang, Jiatong Li, Yinian Mao, Gang Niu, and Tongliang Liu
 
 
 ## Abstract
