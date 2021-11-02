@@ -2,7 +2,7 @@
 
 PyTorch Code for the following paper at NeurIPS 2021:\
 <b>Title</b>: Understanding and Improving Early Stopping for Learning with Noisy Labels \
-<b>Authors</b>: Yingbin Bai, Erkun Yang, Bo Han, Yanhua Yang, Jiatong Li, Yinian Mao, Gang Niu, and Tongliang Liu
+<b>Authors</b>: Yingbin Bai*, Erkun Yang*, Bo Han, Yanhua Yang, Jiatong Li, Yinian Mao, Gang Niu, and Tongliang Liu
 
 
 ## Abstract
@@ -33,17 +33,43 @@ python PES_cs.py --dataset cifar100 --noise_type instance --noise_rate 0.4
 To train PES with semi on CIFAR-10/100
 
 ```
-python PES_semi.py --dataset cifar10 --noise_type instance --noise_rate 0.4
+python PES_semi.py --dataset cifar10 --noise_type instance --noise_rate 0.4  --lambda_u 15
 ```
 
 ```
-python PES_semi.py --dataset cifar100 --noise_type pairflip --noise_rate 0.45
+python PES_semi.py --dataset cifar100 --noise_type pairflip --noise_rate 0.45  --lambda_u 50
 ```
 
 To train PES on Clothing1M
 
 ```train Clothing1M
 python PES_Clothing1M.py
+```
+
+We also evaluate our method on [CIFAR-N Dataset](http://www.noisylabels.com/)
+
+```
+python PES_noisylabels.py --noise_type aggre_label   --dataset CIFAR10 --seed 1
+```
+
+```
+python PES_noisylabels.py --noise_type random_label1 --dataset CIFAR10 --seed 1
+```
+
+```
+python PES_noisylabels.py --noise_type random_label2 --dataset CIFAR10 --seed 1
+```
+
+```
+python PES_noisylabels.py --noise_type random_label3 --dataset CIFAR10 --seed 1
+```
+
+```
+python PES_noisylabels.py --noise_type worse_label   --dataset CIFAR10 --seed 1
+```
+
+```
+python PES_noisylabels.py --dataset CIFAR100 --seed 1
 ```
 
 

@@ -32,11 +32,10 @@ parser.add_argument('--noise_type', default='symmetric', type=str)
 parser.add_argument('--noise_rate', default=0.5, type=float, help='corruption rate, should be less than 1')
 parser.add_argument('--model_name', default='resnet18', type=str)
 
-parser.add_argument('--warmup', default=0, type=int, help='warmup epochs, 0 means default')
-parser.add_argument('--refine_lr', default=1e-4, type=float, help='initial learning rate')
-parser.add_argument('--refine_times_1', default=7, type=int, help='default 5')
-parser.add_argument('--refine_times_2', default=7, type=int, help='default 5')
-parser.add_argument('--refine_times_3', default=0, type=int, help='default 5')
+parser.add_argument('--PES_lr', default=1e-4, type=float, help='initial learning rate')
+parser.add_argument('--T1', default=0, type=int, help='T1 epochs, 0 means default')
+parser.add_argument('--T2', default=7, type=int, help='default 7')
+parser.add_argument('--T3', default=5, type=int, help='default 5')
 
 args = parser.parse_args()
 print(args)
@@ -76,7 +75,7 @@ def splite_confident(outs, clean_targets, noisy_targets):
             if clean_targets[i] == preds[i]:
                 confident_correct_num += 1
 
-    print(getTime(), "Confident:", len(confident_indexs), round(confident_correct_num / len(confident_indexs) * 100, 2))
+    # print(getTime(), "Confident:", len(confident_indexs), round(confident_correct_num / len(confident_indexs) * 100, 2))
     return confident_indexs
 
 
@@ -98,7 +97,7 @@ def update_trainloader(model, train_data, clean_targets, noisy_targets, fixed_co
         cw[cw == np.inf] = 0
 
     class_weights = torch.FloatTensor(cw).cuda()
-    print("Category", train_nums, "precent", class_weights)
+    # print("Category", train_nums, "precent", class_weights)
     ceriation = nn.CrossEntropyLoss(weight=class_weights).cuda()
     return train_loader, ceriation
 
@@ -115,7 +114,7 @@ def noisy_refine(model, train_loader, num_layer, refine_times):
     model.renew_layers(num_layer)
     model.cuda()
 
-    optimizer_refine = torch.optim.Adam(model.parameters(), lr=args.refine_lr)
+    optimizer_refine = torch.optim.Adam(model.parameters(), lr=args.PES_lr)
     for epoch in range(refine_times):
         train(model, train_loader, optimizer_refine, ceriation, epoch)
         _, test_acc = evaluate(model, test_loader, ceriation, "Refine:" + str(epoch))
@@ -127,8 +126,8 @@ def noisy_refine(model, train_loader, num_layer, refine_times):
 
 
 if args.dataset == 'cifar10' or args.dataset == 'CIFAR10':
-    if args.warmup == 0:
-        args.warmup = 25
+    if args.T1 == 0:
+        args.T1 = 25
     args.num_class = 10
     args.model_name = "resnet18"
     transform_train = transforms.Compose([
@@ -141,8 +140,8 @@ if args.dataset == 'cifar10' or args.dataset == 'CIFAR10':
     train_set = CIFAR10(root=args.data_path, train=True, download=True)
     test_set = CIFAR10(root=args.data_path, train=False, transform=transform_test, download=True)
 elif args.dataset == 'cifar100' or args.dataset == 'CIFAR100':
-    if args.warmup == 0:
-        args.warmup = 30
+    if args.T1 == 0:
+        args.T1 = 30
     args.num_class = 100
     args.model_name = "resnet34"
     transform_train = transforms.Compose([
@@ -171,12 +170,11 @@ train_ceriation = ceriation
 best_val_acc = 0
 best_test_acc = 0
 for epoch in range(args.num_epochs):
-    if epoch < args.warmup:
+    if epoch < args.T1:
         train(model, train_loader, optimizer, train_ceriation, epoch)
-    elif epoch == args.warmup:
-        model = noisy_refine(model, train_loader, 2, args.refine_times_3)
-        model = noisy_refine(model, train_loader, 1, args.refine_times_2)
-        model = noisy_refine(model, train_loader, 0, args.refine_times_1)
+    elif epoch == args.T1:
+        model = noisy_refine(model, train_loader, 1, args.T2)
+        model = noisy_refine(model, train_loader, 0, args.T3)
     else:
         train_loader, train_ceriation = update_trainloader(model, train_data, train_clean_labels, train_noisy_labels)
         train(model, train_loader, optimizer, train_ceriation, epoch)
